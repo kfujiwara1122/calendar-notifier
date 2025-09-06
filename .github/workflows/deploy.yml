@@ -1,0 +1,12 @@
+name: Deploy to GCP
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    # ここにGCPデプロイ用のGitHub Actions手順を記載
