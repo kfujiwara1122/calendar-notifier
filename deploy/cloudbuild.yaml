@@ -1,2 +1,26 @@
 steps:
-  # ここにCloud Functionsデプロイ手順を記載
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - functions
+      - deploy
+      - line_webhook
+      - --runtime=python312
+      - --trigger-http
+      - --entry-point=line_webhook
+      - --source=src/line_webhook
+      - --allow-unauthenticated
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - functions
+      - deploy
+      - line_notifier
+      - --runtime=python312
+      - --trigger-http
+      - --entry-point=send_line_message
+      - --source=src/line_notifier
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - functions
+      - update
+      - line_webhook
+      - --disable

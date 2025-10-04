@@ -9,4 +9,4 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    # ここにGCPデプロイ用のGitHub Actions手順を記載
+      - gcloud builds submit --config deploy/cloudbuild.yaml .

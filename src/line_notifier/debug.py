@@ -1,0 +1,15 @@
+import os
+from main import send_line_message
+from dotenv import load_dotenv
+
+
+# ローカルテスト用
+if __name__ == "__main__":
+    load_dotenv()
+    to = os.getenv("GROUP_ID")
+    message = "テストメッセージ"
+    try:
+        result = send_line_message(to, message)
+        print("送信成功:", result)
+    except Exception as e:
+        print("送信失敗:", e)
