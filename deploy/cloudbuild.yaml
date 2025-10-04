@@ -8,6 +8,7 @@ steps:
       - --trigger-http
       - --entry-point=line_webhook
       - --source=src/line_webhook
+      - --service-account=line-bot-419607@appspot.gserviceaccount.com
       - --allow-unauthenticated
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
@@ -16,11 +17,7 @@ steps:
       - line_notifier
       - --runtime=python312
       - --trigger-http
-      - --entry-point=send_line_message
+      - --entry-point=main
       - --source=src/line_notifier
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args:
-      - functions
-      - update
-      - line_webhook
-      - --disable
+      - --set-env-vars=GCP_PROJECT=line-bot-419607
+      - --service-account=line-bot-419607@appspot.gserviceaccount.com
