@@ -1,23 +1,37 @@
 steps:
+#  - name: 'gcr.io/cloud-builders/gcloud'
+#    args:
+#      - functions
+#      - deploy
+#      - line_webhook
+#      - --runtime=python312
+#      - --trigger-http
+#      - --entry-point=line_webhook
+#      - --source=src/line_webhook
+#      - --service-account=line-bot-419607@appspot.gserviceaccount.com
+#      - --allow-unauthenticated
+#  - name: 'gcr.io/cloud-builders/gcloud'
+#    args:
+#      - functions
+#      - deploy
+#      - line_notifier
+#      - --runtime=python312
+#      - --trigger-http
+#      - --entry-point=main
+#      - --source=src/line_notifier
+#      - --set-env-vars=GCP_PROJECT=line-bot-419607
+#      - --service-account=line-bot-419607@appspot.gserviceaccount.com
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - functions
       - deploy
-      - line_webhook
-      - --runtime=python312
-      - --trigger-http
-      - --entry-point=line_webhook
-      - --source=src/line_webhook
-      - --service-account=line-bot-419607@appspot.gserviceaccount.com
-      - --allow-unauthenticated
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args:
-      - functions
-      - deploy
-      - line_notifier
+      - calender_fetcher
       - --runtime=python312
       - --trigger-http
       - --entry-point=main
-      - --source=src/line_notifier
+      - --source=src/calender_fetcher
+      - --set-env-vars=LINE_GROUP_ID=Cb8ecf16df193bd0dc7f51e0776bc5929
+      - --set-env-vars=GCP_LINE_NOTIFIER_URL=https://us-central1-line-bot-419607.cloudfunctions.net/line_notifier
       - --set-env-vars=GCP_PROJECT=line-bot-419607
+      - --set-env-vars=GOOGLE_CALENDAR_ID=notify.fujiwara@gmail.com
       - --service-account=line-bot-419607@appspot.gserviceaccount.com
