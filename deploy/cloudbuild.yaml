@@ -10,17 +10,17 @@ steps:
 #      - --source=src/line_webhook
 #      - --service-account=line-bot-419607@appspot.gserviceaccount.com
 #      - --allow-unauthenticated
-#  - name: 'gcr.io/cloud-builders/gcloud'
-#    args:
-#      - functions
-#      - deploy
-#      - line_notifier
-#      - --runtime=python312
-#      - --trigger-http
-#      - --entry-point=main
-#      - --source=src/line_notifier
-#      - --set-env-vars=GCP_PROJECT=line-bot-419607
-#      - --service-account=line-bot-419607@appspot.gserviceaccount.com
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - functions
+      - deploy
+      - line_notifier
+      - --runtime=python312
+      - --trigger-http
+      - --entry-point=main
+      - --source=src/line_notifier
+      - --set-env-vars=GCP_PROJECT=line-bot-419607
+      - --service-account=line-bot-419607@appspot.gserviceaccount.com
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - functions
@@ -35,3 +35,14 @@ steps:
       - --set-env-vars=GCP_PROJECT=line-bot-419607
       - --set-env-vars=GOOGLE_CALENDAR_ID=notify.fujiwara@gmail.com
       - --service-account=line-bot-419607@appspot.gserviceaccount.com
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - scheduler
+      - jobs
+      - create
+      - http
+      - calender-fetcher-job
+      - --schedule=0 * * * *
+      - --uri=https://us-central1-line-bot-419607.cloudfunctions.net/calender_fetcher
+      - --http-method=GET
+      - --oidc-service-account-email=line-bot-419607@appspot.gserviceaccount.com
