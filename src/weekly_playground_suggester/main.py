@@ -1,5 +1,5 @@
+import argparse
 import os
-import sys
 from pathlib import Path
 
 import anthropic
@@ -31,11 +31,19 @@ def send_line_message(to: str, message: str, access_token: str) -> dict:
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dry-run", action="store_true", help="Claude APIの結果を表示するだけでLINEには送信しない")
+    args = parser.parse_args()
+
     prompt_content = PROMPT_FILE.read_text(encoding="utf-8")
 
     print("Calling Claude API for playground suggestion...")
     suggestion = get_playground_suggestion(prompt_content)
-    print(f"Suggestion:\n{suggestion}")
+    print(f"\n--- Suggestion ---\n{suggestion}\n------------------\n")
+
+    if args.dry_run:
+        print("[DRY RUN] LINE送信をスキップしました。")
+        return
 
     access_token = os.environ["LINE_CHANNEL_ACCESS_TOKEN"]
     line_group_id = os.environ["LINE_GROUP_ID"]
