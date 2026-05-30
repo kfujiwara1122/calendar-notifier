@@ -6,7 +6,7 @@ import anthropic
 import requests
 
 LINE_API_URL = "https://api.line.me/v2/bot/message/push"
-PROMPT_FILE = Path(__file__).parent.parent.parent / "playground_prompt.md"
+PROMPT_FILE = Path(__file__).parent / "playground_prompt.md"
 
 
 def get_playground_suggestion(prompt_content: str) -> str:
