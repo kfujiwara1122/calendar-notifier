@@ -19,13 +19,20 @@ def get_playground_suggestion(prompt_content: str) -> str:
     return message.content[0].text
 
 
+LINE_MESSAGE_MAX_LENGTH = 5000
+
+
 def send_line_message(to: str, message: str, access_token: str) -> dict:
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
     }
+    if len(message) > LINE_MESSAGE_MAX_LENGTH:
+        message = message[: LINE_MESSAGE_MAX_LENGTH - 3] + "..."
     payload = {"to": to, "messages": [{"type": "text", "text": message}]}
     response = requests.post(LINE_API_URL, headers=headers, json=payload)
+    if not response.ok:
+        print(f"LINE API error: status={response.status_code}, body={response.text}")
     response.raise_for_status()
     return response.json()
 
