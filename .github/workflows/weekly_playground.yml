@@ -1,0 +1,30 @@
+name: Weekly Playground Suggestion
+
+on:
+  schedule:
+    # Every Friday at 10:00 JST (01:00 UTC)
+    - cron: '0 1 * * 5'
+  workflow_dispatch: # Allow manual trigger for testing
+
+jobs:
+  suggest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r src/weekly_playground_suggester/requirements.txt
+
+      - name: Send playground suggestion to LINE
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_GROUP_ID: ${{ secrets.LINE_GROUP_ID }}
+        run: python src/weekly_playground_suggester/main.py
