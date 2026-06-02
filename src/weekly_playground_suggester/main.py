@@ -26,7 +26,8 @@ def send_line_message(to: str, message: str, access_token: str) -> dict:
     }
     payload = {"to": to, "messages": [{"type": "text", "text": message}]}
     response = requests.post(LINE_API_URL, headers=headers, json=payload)
-    response.raise_for_status()
+    if not response.ok:
+        raise RuntimeError(f"LINE API error {response.status_code}: {response.text}")
     return response.json()
 
 
