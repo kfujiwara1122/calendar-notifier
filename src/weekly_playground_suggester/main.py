@@ -55,6 +55,11 @@ def main():
     access_token = os.environ["LINE_CHANNEL_ACCESS_TOKEN"]
     line_group_id = os.environ["LINE_GROUP_ID"]
 
+    if not line_group_id:
+        raise ValueError("LINE_GROUP_ID is empty. Set the secret in GitHub repository settings.")
+    if not access_token:
+        raise ValueError("LINE_CHANNEL_ACCESS_TOKEN is empty. Set the secret in GitHub repository settings.")
+
     print("Sending to LINE...")
     result = send_line_message(line_group_id, suggestion, access_token)
     print(f"LINE API response: {result}")
