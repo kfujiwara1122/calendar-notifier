@@ -1,22 +1,12 @@
 import os
 import datetime
+import json
+import sys
+import requests
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
-from google.cloud import secretmanager
-import requests
-import json
-import google.auth
-import google.auth.transport.requests
-import google.oauth2.id_token
 
-
-def get_service_account_info():
-    client = secretmanager.SecretManagerServiceClient()
-    project_id = os.getenv("GCP_PROJECT")
-    secret_id = "GOOGLE_CALENDAR_SERVICE_ACCOUNT"
-    name = f"projects/{project_id}/secrets/{secret_id}/versions/latest"
-    response = client.access_secret_version(request={"name": name})
-    return response.payload.data.decode("UTF-8")
+LINE_API_URL = "https://api.line.me/v2/bot/message/push"
 
 
 def get_hour_range(dt=None):
@@ -27,19 +17,14 @@ def get_hour_range(dt=None):
     return start.isoformat() + "Z", end.isoformat() + "Z"
 
 
-def fetch_events(service_account_info=None):
-    if service_account_info is None:
-        service_account_info = get_service_account_info()
-    if isinstance(service_account_info, str):
-        import json
-
-        service_account_info = json.loads(service_account_info)
+def fetch_events():
+    service_account_info = json.loads(os.environ["GOOGLE_CALENDAR_SERVICE_ACCOUNT"])
     credentials = service_account.Credentials.from_service_account_info(
         service_account_info,
         scopes=["https://www.googleapis.com/auth/calendar.readonly"],
     )
     service = build("calendar", "v3", credentials=credentials)
-    calendar_id = os.getenv("GOOGLE_CALENDAR_ID")
+    calendar_id = os.environ["GOOGLE_CALENDAR_ID"]
     time_min, time_max = get_hour_range()
     events_result = (
         service.events()
@@ -53,57 +38,43 @@ def fetch_events(service_account_info=None):
         )
         .execute()
     )
-    events = events_result.get("items", [])
-    return events
+    return events_result.get("items", [])
 
 
 def create_event_message(event):
-    message = [event["summary"]]
+    parts = [event["summary"]]
     if "description" in event:
-        message.append("----")
-        message.append(event["description"])
-    return "\n".join(message)
+        parts.append("----")
+        parts.append(event["description"])
+    return "\n".join(parts)
 
 
-def get_id_token(target_url):
-    credentials, _ = google.auth.default()
-    request = google.auth.transport.requests.Request()
-    id_token = google.oauth2.id_token.fetch_id_token(request, target_url)
-    return id_token
+def send_line_message(to, message):
+    headers = {
+        "Authorization": f"Bearer {os.environ['LINE_CHANNEL_ACCESS_TOKEN']}",
+        "Content-Type": "application/json",
+    }
+    payload = {"to": to, "messages": [{"type": "text", "text": message}]}
+    response = requests.post(LINE_API_URL, headers=headers, json=payload)
+    response.raise_for_status()
+    return response.json()
 
 
-def main(request):
+def main():
     events = fetch_events()
-    LINE_API_URL = os.getenv("GCP_LINE_NOTIFIER_URL")
-    LINE_GROUP_ID = os.getenv("LINE_GROUP_ID")
-    results = []
-    id_token = get_id_token(LINE_API_URL)
-    headers = {"Authorization": f"Bearer {id_token}"}
+    line_group_id = os.environ["LINE_GROUP_ID"]
+    failed = False
     for event in events:
         message = create_event_message(event)
-        data = {"to": LINE_GROUP_ID, "message": message}
         try:
-            response = requests.post(LINE_API_URL, json=data, headers=headers)
-            if response.status_code == 200:
-                print(f"送信成功: {message}")
-                results.append({"event": event.get("summary", ""), "status": "success"})
-            else:
-                print(
-                    f"送信失敗: {message}, status_code={response.status_code}, response={response.text}"
-                )
-                results.append(
-                    {
-                        "event": event.get("summary", ""),
-                        "status": "failed",
-                        "error": response.text,
-                    }
-                )
+            send_line_message(line_group_id, message)
+            print(f"送信成功: {event.get('summary', '')}")
         except Exception as e:
-            print(f"送信例外: {message}, error={e}")
-            results.append(
-                {"event": event.get("summary", ""), "status": "error", "error": str(e)}
-            )
-    result_json = json.dumps(
-        {"count": len(results), "results": results}, ensure_ascii=False
-    )
-    return result_json, 200, {"Content-Type": "application/json"}
+            print(f"送信失敗: {event.get('summary', '')}, error={e}", file=sys.stderr)
+            failed = True
+    if failed:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
