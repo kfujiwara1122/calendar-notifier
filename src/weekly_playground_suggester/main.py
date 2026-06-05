@@ -1,5 +1,6 @@
 import argparse
 import os
+from datetime import date
 from pathlib import Path
 
 import anthropic
@@ -35,7 +36,8 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Claude APIの結果を表示するだけでLINEには送信しない")
     args = parser.parse_args()
 
-    prompt_content = PROMPT_FILE.read_text(encoding="utf-8")
+    today = date.today().strftime("%Y年%m月%d日")
+    prompt_content = f"今日の日付: {today}\n\n" + PROMPT_FILE.read_text(encoding="utf-8")
 
     print("Calling Claude API for playground suggestion...")
     suggestion = get_playground_suggestion(prompt_content)
