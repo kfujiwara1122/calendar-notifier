@@ -1,9 +1,10 @@
 name: Calendar Notifier
 
 on:
-  schedule:
-    # Every hour on the hour (UTC) — 9:00〜21:00 JST = 0:00〜12:00 UTC
-    - cron: '0 * * * *'
+  # GitHub Actions の schedule トリガーはベストエフォートで遅延・スキップが起こりうるため、
+  # GCP Cloud Scheduler(infra/ で Terraform 管理)から repository_dispatch で毎時起動する。
+  repository_dispatch:
+    types: [calendar-tick]
   workflow_dispatch:
 
 jobs:
