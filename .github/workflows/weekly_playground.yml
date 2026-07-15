@@ -1,9 +1,10 @@
 name: Weekly Playground Suggestion
 
 on:
-  schedule:
-    # Every Friday at 10:00 JST (01:00 UTC)
-    - cron: '0 1 * * 5'
+  # GitHub Actions の schedule トリガーはベストエフォートで遅延・スキップが起こりうるため、
+  # GCP Cloud Scheduler(infra/ で Terraform 管理)から repository_dispatch で週次起動する。
+  repository_dispatch:
+    types: [playground-tick]
   workflow_dispatch: # Allow manual trigger for testing
 
 jobs:
