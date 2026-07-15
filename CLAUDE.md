@@ -67,5 +67,5 @@ mypy src/
 
 ## 注意事項
 
-- `.env` ファイルはコミットしない（`.env.example` をテンプレートとして使用）
+- 環境変数は GitHub Secrets / Variables で管理する（`.env` はコミットしない）
 - サービスアカウントの JSON キーはリポジトリに含めない
